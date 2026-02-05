@@ -1,7 +1,31 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-    <h2>Active Listings</h2>
-
-    TODO
+<h2>Active Listings</h2>
+{% for listing in listings %}
+<div>
+    <div>
+        {{ listing.title }}
+    </div>
+    <div>
+        {{ listing.description }}
+    </div>
+    <div>
+        <img src="{{ listing.image.url }}" width="300" height="300">
+    </div>
+    <div>
+        {{ listing.is_active }}
+    </div>
+    <div>
+        {{ listing.category }}
+    </div>
+    <div>
+        {{ listing.seller }}
+    </div>
+</div>
+{% empty %}
+<div>
+    No listings available
+</div>
+{% endfor %}
 {% endblock %}

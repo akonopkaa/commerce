@@ -3,12 +3,25 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-
 from .models import User
+from django.contrib.auth.decorators import login_required
+from django.forms import ModelForm
+from django import forms
+from .models import *
+from PIL import Image
 
+class CreateListingForm(ModelForm):
+    price = forms.IntegerField() 
+
+    class Meta:
+        model = Listing
+        fields = ["title", "description", "image", "category", "price"]
 
 def index(request):
-    return render(request, "auctions/index.html")
+    return render(request, "auctions/index.html", {
+        "listings": Listing.objects.all()
+    }
+)
 
 
 def login_view(request):
@@ -61,3 +74,26 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "auctions/register.html")
+    
+@login_required
+def create_listing(request):
+    if request.method == "POST":
+        form = CreateListingForm(request.POST, request.FILES)
+        if form.is_valid():
+            listing = form.save(commit = False)
+            listing.seller = request.user
+            listing.save()
+            bid = Bid(
+                price = request.POST["price"],
+                user = request.user, 
+                listing = listing)
+            bid.save()
+            if listing.image:
+                img = Image.open(listing.image.path)
+                output_size = (600, 600)
+                img.resize(output_size)
+                img.save(listing.image.path)
+    return render(request, "auctions/create_listing.html", {
+        "form": CreateListingForm()
+    }
+)
