@@ -9,6 +9,7 @@ from django.forms import ModelForm
 from django import forms
 from .models import *
 from PIL import Image
+from django.shortcuts import get_object_or_404
 
 class CreateListingForm(ModelForm):
     price = forms.IntegerField() 
@@ -19,7 +20,7 @@ class CreateListingForm(ModelForm):
 
 def index(request):
     return render(request, "auctions/index.html", {
-        "listings": Listing.objects.all()
+        "listings": Listing.objects.filter(is_active = True).all()
     }
 )
 
@@ -93,7 +94,34 @@ def create_listing(request):
                 output_size = (600, 600)
                 img.resize(output_size)
                 img.save(listing.image.path)
+            return HttpResponseRedirect(reverse("index"))
     return render(request, "auctions/create_listing.html", {
         "form": CreateListingForm()
+    }
+)
+
+def view_listing(request, listing):
+    listing = get_object_or_404(Listing, id = listing)
+    in_watchlist = False
+    if request.user.is_authenticated:
+        in_watchlist = request.user.watchlist.filter(id = listing.id).exists()
+    if request.method == "POST":
+        if "change_watchlist" in request.POST and request.user.is_authenticated:
+            if in_watchlist:
+                request.user.watchlist.remove(listing)
+            else:
+                request.user.watchlist.add(listing)
+            return HttpResponseRedirect(reverse("view_listing", args = (listing.id,)))
+    return render(request, "auctions/view_listing.html", {
+        "listing": listing,
+        "in_watchlist": in_watchlist
+    }
+)
+
+@login_required
+def watchlist(request):
+    listings = request.user.watchlist.all()
+    return render(request, "auctions/index.html", {
+        "listings": listings
     }
 )

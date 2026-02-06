@@ -1,0 +1,40 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+<div>
+    <h2>
+        {{ listing.title }}
+    </h2>
+    <div>
+        {{ listing.description }}
+    </div>
+    <div>
+        <img src="{{ listing.image.url }}" width="300" height="300">
+    </div>
+    <div>
+        {{ listing.is_active }}
+    </div>
+    <div>
+        {{ listing.category }}
+    </div>
+    <div>
+        {{ listing.seller }}
+    </div>
+    {% if user.is_authenticated %}
+    <div>
+        <form action="{% url 'view_listing' listing.id %}" method="POST">
+            {% csrf_token %}
+            {% if in_watchlist %}
+            <button type="submit" name="change_watchlist">
+                Remove from Watchlist
+            </button>
+            {% else %}
+            <button type="submit" name="change_watchlist">
+                Add to Watchlist
+            </button>
+            {% endif %}
+        </form>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
