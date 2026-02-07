@@ -10,6 +10,7 @@ from django import forms
 from .models import *
 from PIL import Image
 from django.shortcuts import get_object_or_404
+from django.contrib import messages
 
 class CreateListingForm(ModelForm):
     price = forms.IntegerField() 
@@ -18,12 +19,21 @@ class CreateListingForm(ModelForm):
         model = Listing
         fields = ["title", "description", "image", "category", "price"]
 
+class BidForm(ModelForm):
+    class Meta:
+        model = Bid
+        fields = ["price"]
+
+class CommentForm(ModelForm):
+    class Meta:
+        model = Comment
+        fields = ["comment"]
+
 def index(request):
     return render(request, "auctions/index.html", {
-        "listings": Listing.objects.filter(is_active = True).all()
+        "listings": Listing.objects.filter(is_active = True).order_by("-id")
     }
 )
-
 
 def login_view(request):
     if request.method == "POST":
@@ -44,11 +54,9 @@ def login_view(request):
     else:
         return render(request, "auctions/login.html")
 
-
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("index"))
-
 
 def register(request):
     if request.method == "POST":
@@ -76,6 +84,21 @@ def register(request):
     else:
         return render(request, "auctions/register.html")
     
+def view_listing(request, listing):
+    listing = get_object_or_404(Listing, id = listing)
+    comments = Comment.objects.filter(listing = listing)
+    in_watchlist = False
+    if request.user.is_authenticated:
+        in_watchlist = request.user.watchlist.filter(id = listing.id).exists()
+    return render(request, "auctions/view_listing.html", {
+        "listing": listing,
+        "comments": comments,
+        "in_watchlist": in_watchlist,
+        "bid_form": BidForm(),
+        "comment_form": CommentForm()
+    }
+)
+
 @login_required
 def create_listing(request):
     if request.method == "POST":
@@ -100,23 +123,17 @@ def create_listing(request):
     }
 )
 
-def view_listing(request, listing):
-    listing = get_object_or_404(Listing, id = listing)
-    in_watchlist = False
-    if request.user.is_authenticated:
-        in_watchlist = request.user.watchlist.filter(id = listing.id).exists()
+@login_required
+def change_watchlist(request, listing):
     if request.method == "POST":
-        if "change_watchlist" in request.POST and request.user.is_authenticated:
-            if in_watchlist:
-                request.user.watchlist.remove(listing)
-            else:
-                request.user.watchlist.add(listing)
-            return HttpResponseRedirect(reverse("view_listing", args = (listing.id,)))
-    return render(request, "auctions/view_listing.html", {
-        "listing": listing,
-        "in_watchlist": in_watchlist
-    }
-)
+        listing = get_object_or_404(Listing, id = listing)
+        if listing in request.user.watchlist.all():
+            request.user.watchlist.remove(listing)
+        else:
+            request.user.watchlist.add(listing)
+        return HttpResponseRedirect(reverse("view_listing", args = (listing.id,)))
+    else:
+        return HttpResponseRedirect(reverse("index"))
 
 @login_required
 def watchlist(request):
@@ -125,3 +142,44 @@ def watchlist(request):
         "listings": listings
     }
 )
+
+@login_required
+def bid(request, listing):
+    if request.method == "POST":
+        listing = get_object_or_404(Listing, id = listing)
+        try:
+            price = int(request.POST["price"])
+        except ValueError:
+            messages.error(request, "Invalid price format.")
+            return HttpResponseRedirect(reverse("view_listing", args = (listing,)))
+        bid = Bid.objects.filter(listing = listing).order_by("-price").first()
+        if price <= bid.price:
+            messages.error(request, "Price must be higher than current bid.")
+            return HttpResponseRedirect(reverse("view_listing", args = (listing.id,)))
+        if request.user == listing.seller:
+            messages.error(request, "Price must be higher than current bid.")
+            return HttpResponseRedirect(reverse("view_listing", args = (listing.id,)))
+        bid = Bid(
+            user = request.user, 
+            listing = listing,
+            price = price)
+        bid.save()
+        messages.success(request, "Bid placed successfully!")
+        return HttpResponseRedirect(reverse("view_listing", args = (listing.id,)))
+    else:
+        return HttpResponseRedirect(reverse("view_listing", args = (listing.id,)))
+
+@login_required
+def comment(request, listing):
+    if request.method == "POST":
+        listing = get_object_or_404(Listing, id = listing)
+        comment = Comment(
+            user = request.user, 
+            listing = listing,
+            comment = request.POST["comment"]
+        )
+        comment.save()
+        messages.success(request, "Comment created successfully!")
+        return HttpResponseRedirect(reverse("view_listing", args = (listing.id,)))
+    else:
+        return HttpResponseRedirect(reverse("view_listing", args = (listing.id,)))

@@ -21,9 +21,9 @@ class Listing(models.Model):
     seller = models.ForeignKey(User, on_delete = models.CASCADE, related_name = "listing_user")
 
 class Bid(models.Model):
-    price = models.PositiveIntegerField(default = 0)
     user = models.ForeignKey(User, on_delete = models.CASCADE, related_name = "bid_user")
     listing = models.ForeignKey(Listing, on_delete = models.CASCADE, related_name = "bid_listing")
+    price = models.PositiveIntegerField(default = 0)
 
 class Comment(models.Model):
     user = models.ForeignKey(User, on_delete = models.CASCADE, related_name = "comment_user")

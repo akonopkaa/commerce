@@ -9,7 +9,11 @@
         {{ listing.description }}
     </div>
     <div>
+        {% if listing.image %}
         <img src="{{ listing.image.url }}" width="300" height="300">
+        {% else %}
+        <img src="/media/uploads/no_image_available.jpg" width="300" height="300">
+        {% endif %}
     </div>
     <div>
         {{ listing.is_active }}
@@ -20,9 +24,12 @@
     <div>
         {{ listing.seller }}
     </div>
+    <div>
+        {{ listing.bid_listing.last.price }}
+    </div>
     {% if user.is_authenticated %}
     <div>
-        <form action="{% url 'view_listing' listing.id %}" method="POST">
+        <form action="{% url 'change_watchlist' listing.id %}" method="POST">
             {% csrf_token %}
             {% if in_watchlist %}
             <button type="submit" name="change_watchlist">
@@ -35,6 +42,45 @@
             {% endif %}
         </form>
     </div>
+    {% if user != listing.seller %}
+    <div>
+        <form action="{% url 'bid' listing.id%}" method="POST">
+            {% csrf_token %}
+            {{ bid_form }}
+            <input type="submit">
+        </form>
+    </div>
+    {% if messages %}
+    {% for message in messages %}
+    <div>
+        {{ message }}
+    </div>
+    {% endfor %}
     {% endif %}
 </div>
+{% endif %}
+<div>
+    <form action="{% url 'comment' listing.id%}" method="POST">
+        {% csrf_token %}
+        {{ comment_form }}
+        <input type="submit">
+    </form>
+</div>
+<div>
+    {% for comment in comments %}
+    <div>
+        <div>
+            {{ comment.user.username }}
+        </div>
+        <div>
+            {{ comment.comment }}
+        </div>
+        {% empty %}
+        <div>
+            No comments yet.
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
 {% endblock %}
