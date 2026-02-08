@@ -2,32 +2,34 @@
 
 {% block body %}
 <div>
-    <h2>
-        {{ listing.title }}
-    </h2>
     <div>
-        {{ listing.description }}
+        <h2>
+            {{ listing.title }}
+        </h2>
+        <div>
+            {{ listing.description }}
+        </div>
+        <div>
+            {% if listing.image %}
+            <img src="{{ listing.image.url }}" width="300" height="300">
+            {% else %}
+            <img src="/media/uploads/no_image_available.jpg" width="300" height="300">
+            {% endif %}
+        </div>
+        <div>
+            {{ listing.is_active }}
+        </div>
+        <div>
+            {{ listing.category }}
+        </div>
+        <div>
+            {{ listing.seller }}
+        </div>
+        <div>
+            {{ listing.bid_listing.last.price }}
+        </div>
     </div>
-    <div>
-        {% if listing.image %}
-        <img src="{{ listing.image.url }}" width="300" height="300">
-        {% else %}
-        <img src="/media/uploads/no_image_available.jpg" width="300" height="300">
-        {% endif %}
-    </div>
-    <div>
-        {{ listing.is_active }}
-    </div>
-    <div>
-        {{ listing.category }}
-    </div>
-    <div>
-        {{ listing.seller }}
-    </div>
-    <div>
-        {{ listing.bid_listing.last.price }}
-    </div>
-    {% if user.is_authenticated %}
+    {% if user.is_authenticated and listing.is_active%}
     <div>
         <form action="{% url 'change_watchlist' listing.id %}" method="POST">
             {% csrf_token %}
@@ -50,37 +52,51 @@
             <input type="submit">
         </form>
     </div>
-    {% if messages %}
-    {% for message in messages %}
+    {% else %}
     <div>
-        {{ message }}
+        <form action="{% url 'close_listing' listing.id %}" method="POST">
+            {% csrf_token %}
+            <button type="submit" name="close_listing">
+                Close listing
+            </button>
+        </form>
     </div>
-    {% endfor %}
     {% endif %}
-</div>
-{% endif %}
-<div>
-    <form action="{% url 'comment' listing.id%}" method="POST">
-        {% csrf_token %}
-        {{ comment_form }}
-        <input type="submit">
-    </form>
-</div>
-<div>
-    {% for comment in comments %}
     <div>
+        <form action="{% url 'comment' listing.id%}" method="POST">
+            {% csrf_token %}
+            {{ comment_form }}
+            <input type="submit">
+        </form>
+    </div>
+    {% endif %}
+    {% if messages %}
+    <div>
+        {% for message in messages %}
         <div>
-            {{ comment.user.username }}
-        </div>
-        <div>
-            {{ comment.comment }}
+            {{ message }}
         </div>
         {% empty %}
         <div>
-            No comments yet.
         </div>
+        {% endfor %}
     </div>
-    {% endfor %}
+    {% endif %}
+    <div>
+        {% for comment in comments %}
+        <div>
+            <div>
+                {{ comment.user.username }}
+            </div>
+            <div>
+                {{ comment.comment }}
+            </div>
+            {% empty %}
+            <div>
+                No comments yet.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endblock %}
 </div>
-{% endif %}
-{% endblock %}

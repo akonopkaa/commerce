@@ -19,6 +19,7 @@ class Listing(models.Model):
     is_active = models.BooleanField(default = True)
     category = models.ForeignKey(Category, on_delete = models.CASCADE, related_name = "listing_category")
     seller = models.ForeignKey(User, on_delete = models.CASCADE, related_name = "listing_user")
+    winner = models.ForeignKey(User, on_delete = models.CASCADE, related_name = "listing_winner", blank = True, null = True)
 
 class Bid(models.Model):
     user = models.ForeignKey(User, on_delete = models.CASCADE, related_name = "bid_user")

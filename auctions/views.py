@@ -86,10 +86,15 @@ def register(request):
     
 def view_listing(request, listing):
     listing = get_object_or_404(Listing, id = listing)
-    comments = Comment.objects.filter(listing = listing)
+    comments = Comment.objects.filter(listing = listing).order_by("-id")
     in_watchlist = False
     if request.user.is_authenticated:
         in_watchlist = request.user.watchlist.filter(id = listing.id).exists()
+    if not listing.is_active:
+        if request.user == listing.winner:
+            messages.success(request, "You won the auction!")
+        else:
+            messages.success(request, "This auction is closed!")
     return render(request, "auctions/view_listing.html", {
         "listing": listing,
         "comments": comments,
@@ -180,6 +185,22 @@ def comment(request, listing):
         )
         comment.save()
         messages.success(request, "Comment created successfully!")
+        return HttpResponseRedirect(reverse("view_listing", args = (listing.id,)))
+    else:
+        return HttpResponseRedirect(reverse("view_listing", args = (listing.id,)))
+    
+@login_required
+def close_listing(request, listing):
+    if request.method == "POST":
+        listing = get_object_or_404(Listing, id = listing)
+        if request.user != listing.seller:
+            messages.error(request, "Only the seller can close this listing")
+            return HttpResponseRedirect(reverse("view_listing", args = (listing.id,)))
+        bid = Bid.objects.filter(listing = listing).order_by("-price").first()
+        listing.is_active = False
+        listing.winner = bid.user
+        listing.save()
+        messages.success(request, "Listing closed successfully!")
         return HttpResponseRedirect(reverse("view_listing", args = (listing.id,)))
     else:
         return HttpResponseRedirect(reverse("view_listing", args = (listing.id,)))
