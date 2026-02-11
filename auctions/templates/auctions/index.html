@@ -1,40 +1,47 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-<h2>Listings</h2>
-{% for listing in listings %}
-<div>
-    <div>
-        <a href="{% url 'view_listing' listing.id %}">
-            {{ listing.title }}
-        </a>
+<h2>
+    {{ title }}
+</h2>
+<div class="row">
+    {% for listing in listings %}
+    <div class="col-md-4">
+        <div class="card card-product">
+            <div class="img-wrap">
+                {% if listing.image %}
+                <img src="{{ listing.image.url }}">
+                {% else %}
+                <img src="/media/uploads/no_image_available.jpg">
+                {% endif %}
+            </div>
+            <div class="info-wrap">
+                <div class="title">
+                    <a href="{% url 'view_listing' listing.id %}">
+                        {{ listing.title }}
+                    </a>
+                </div>
+                <div class="desc">
+                    {{ listing.description }}
+                </div>
+            </div>
+            <div class="bottom-wrap">
+                <div>
+                    Seller: {{ listing.seller }}
+                </div>
+                <div>
+                    Category: {{ listing.category }}
+                </div>
+                <div>
+                    Highest bid: ${{ listing.bid_listing.last.price }}
+                </div>
+            </div>
+        </div>
     </div>
-    <div>
-        {{ listing.description }}
+    {% empty %}
+    <div class="col-md-4">
+        No listings available
     </div>
-    <div>
-        {% if listing.image %}
-        <img src="{{ listing.image.url }}" width="300" height="300">
-        {% else %}
-        <img src="/media/uploads/no_image_available.jpg" width="300" height="300">
-        {% endif %}
-    </div>
-    <div>
-        {{ listing.is_active }}
-    </div>
-    <div>
-        {{ listing.category }}
-    </div>
-    <div>
-        {{ listing.seller }}
-    </div>
-    <div>
-        {{ listing.bid_listing.last.price }}
-    </div>
+    {% endfor %}
 </div>
-{% empty %}
-<div>
-    No listings available
-</div>
-{% endfor %}
 {% endblock %}

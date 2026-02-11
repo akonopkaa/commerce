@@ -29,7 +29,7 @@
             {{ listing.bid_listing.last.price }}
         </div>
     </div>
-    {% if user.is_authenticated and listing.is_active%}
+    {% if user.is_authenticated %}
     <div>
         <form action="{% url 'change_watchlist' listing.id %}" method="POST">
             {% csrf_token %}
@@ -44,6 +44,7 @@
             {% endif %}
         </form>
     </div>
+    {% if listing.is_active %}
     {% if user != listing.seller %}
     <div>
         <form action="{% url 'bid' listing.id%}" method="POST">
@@ -70,6 +71,7 @@
         </form>
     </div>
     {% endif %}
+    {% endif %}
     {% if messages %}
     <div>
         {% for message in messages %}
@@ -92,6 +94,8 @@
                 {{ comment.comment }}
             </div>
             {% empty %}
+            <div>
+            </div>
             <div>
                 No comments yet.
             </div>

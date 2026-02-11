@@ -31,6 +31,7 @@ class CommentForm(ModelForm):
 
 def index(request):
     return render(request, "auctions/index.html", {
+        "title": "Active Listings",
         "listings": Listing.objects.filter(is_active = True).order_by("-id")
     }
 )
@@ -144,6 +145,7 @@ def change_watchlist(request, listing):
 def watchlist(request):
     listings = request.user.watchlist.all()
     return render(request, "auctions/index.html", {
+        "title": "Watchlist",
         "listings": listings
     }
 )
@@ -204,3 +206,30 @@ def close_listing(request, listing):
         return HttpResponseRedirect(reverse("view_listing", args = (listing.id,)))
     else:
         return HttpResponseRedirect(reverse("view_listing", args = (listing.id,)))
+    
+@login_required
+def won_auctions(request):
+    listings = Listing.objects.filter(winner = request.user).filter(is_active = False).exclude(seller = request.user).order_by("-id")
+    return render(request, "auctions/index.html", {
+        "title": "Won Actions",
+        "listings": listings
+    }
+)
+
+@login_required
+def categories(request):
+    categories = Category.objects.order_by("category")
+    return render(request, "auctions/categories.html", {
+        "categories": categories
+    }
+)
+
+@login_required
+def view_category(request, category):
+    category = get_object_or_404(Category, id = category)
+    listings = Listing.objects.filter(category = category).filter(is_active = True).order_by("-id")
+    return render(request, "auctions/index.html", {
+        "title": category.category,
+        "listings": listings
+    }
+)
