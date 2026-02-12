@@ -1,106 +1,103 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-<div>
-    <div>
-        <h2>
+<div class="card w-50 mx-auto">
+    <div class="card-img-top d-flex justify-content-center">
+        {% if listing.image %}
+        <img src="{{ listing.image.url }}" width="300" height="300">
+        {% else %}
+        <img src="/media/uploads/no_image_available.jpg" width="300" height="300">
+        {% endif %}
+    </div>
+    <div class="card-body">
+        <h2 class="card-title mb-2">
             {{ listing.title }}
         </h2>
-        <div>
+        <div class="card-text mb-2">
             {{ listing.description }}
         </div>
-        <div>
-            {% if listing.image %}
-            <img src="{{ listing.image.url }}" width="300" height="300">
-            {% else %}
-            <img src="/media/uploads/no_image_available.jpg" width="300" height="300">
-            {% endif %}
+        <div class="mb-2">
+            Category: {{ listing.category }}
         </div>
-        <div>
-            {{ listing.is_active }}
+        <div class="mb-2">
+            Seller: {{ listing.seller }}
         </div>
-        <div>
-            {{ listing.category }}
+        <div class="mb-2">
+            Highest bid: {{ listing.bid_listing.last.price }}
         </div>
-        <div>
-            {{ listing.seller }}
+        {% if user.is_authenticated %}
+        <div class="mb-2">
+            <form action="{% url 'change_watchlist' listing.id %}" method="POST">
+                {% csrf_token %}
+                {% if in_watchlist %}
+                <button class="btn btn-primary" type="submit" name="change_watchlist">
+                    Remove from Watchlist
+                </button>
+                {% else %}
+                <button class="btn btn-primary" type="submit" name="change_watchlist">
+                    Add to Watchlist
+                </button>
+                {% endif %}
+            </form>
         </div>
-        <div>
-            {{ listing.bid_listing.last.price }}
+        {% if listing.is_active %}
+        {% if user != listing.seller %}
+        <div class="mb-2">
+            <form action="{% url 'bid' listing.id%}" method="POST">
+                {% csrf_token %}
+                {{ bid_form }}
+                <input class="btn btn-primary" type="submit">
+            </form>
         </div>
+        {% else %}
+        <div class="mb-2">
+            <form action="{% url 'close_listing' listing.id %}" method="POST">
+                {% csrf_token %}
+                <button class="btn btn-primary" type="submit" name="close_listing">
+                    Close listing
+                </button>
+            </form>
+        </div>
+        {% endif %}
+        {% endif %}
+        {% endif %}
     </div>
     {% if user.is_authenticated %}
-    <div>
-        <form action="{% url 'change_watchlist' listing.id %}" method="POST">
-            {% csrf_token %}
-            {% if in_watchlist %}
-            <button type="submit" name="change_watchlist">
-                Remove from Watchlist
-            </button>
-            {% else %}
-            <button type="submit" name="change_watchlist">
-                Add to Watchlist
-            </button>
-            {% endif %}
-        </form>
-    </div>
-    {% if listing.is_active %}
-    {% if user != listing.seller %}
-    <div>
-        <form action="{% url 'bid' listing.id%}" method="POST">
-            {% csrf_token %}
-            {{ bid_form }}
-            <input type="submit">
-        </form>
-    </div>
-    {% else %}
-    <div>
-        <form action="{% url 'close_listing' listing.id %}" method="POST">
-            {% csrf_token %}
-            <button type="submit" name="close_listing">
-                Close listing
-            </button>
-        </form>
-    </div>
-    {% endif %}
-    <div>
+    <div class="card-body form-group w-50 mb-2">
         <form action="{% url 'comment' listing.id%}" method="POST">
             {% csrf_token %}
             {{ comment_form }}
-            <input type="submit">
+            <input class="btn btn-primary" type="submit">
         </form>
     </div>
     {% endif %}
-    {% endif %}
     {% if messages %}
-    <div>
+    <div class="card-body mb-2">
         {% for message in messages %}
         <div>
             {{ message }}
         </div>
-        {% empty %}
-        <div>
-        </div>
         {% endfor %}
     </div>
     {% endif %}
-    <div>
+    <div class="card-body mb-2">
+        <h3>
+            Comments:
+        </h3>
         {% for comment in comments %}
-        <div>
+        <div class="mb-2">
             <div>
-                {{ comment.user.username }}
+                {{ comment.user.username }} <small class="text-muted">commented:</small>
             </div>
-            <div>
-                {{ comment.comment }}
+            <div class="mb-2">
+                "{{ comment.comment }}"
             </div>
-            {% empty %}
-            <div>
-            </div>
-            <div>
-                No comments yet.
-            </div>
+        </div>
+        {% empty %}
+        <div class="mb-2">
+            No comments yet.
         </div>
         {% endfor %}
     </div>
-    {% endblock %}
 </div>
+{% endblock %}

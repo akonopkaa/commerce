@@ -11,15 +11,15 @@
 </head>
 
 <body>
-    <h1>Auctions</h1>
-    <div>
+    <h1 class="text-center">Auctions</h1>
+    <div class="text-center">
         {% if user.is_authenticated %}
         Signed in as <strong>{{ user.username }}</strong>.
         {% else %}
         Not signed in.
         {% endif %}
     </div>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white">
         <div class="collapse navbar-collapse justify-content-md-center">
             <ul class="navbar-nav">
                 <li class="nav-item">

@@ -13,11 +13,33 @@ from django.shortcuts import get_object_or_404
 from django.contrib import messages
 
 class CreateListingForm(ModelForm):
-    price = forms.IntegerField() 
+    price = forms.IntegerField(
+        widget = forms.NumberInput(attrs={
+            'class': 'form-control mb-3',
+            'placeholder': 'Starting Bid'
+        })
+    )
 
     class Meta:
         model = Listing
         fields = ["title", "description", "image", "category", "price"]
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'form-control mb-3', 
+                'placeholder': 'Enter Title'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control mb-3',
+                'placeholder': 'Enter Description',
+                'rows': 3
+            }),
+            'image': forms.FileInput(attrs={
+                'class': 'form-control-file mb-3'
+            }),
+            'category': forms.Select(attrs={
+                'class': 'form-control mb-3'
+            })
+        }
 
 class BidForm(ModelForm):
     class Meta:
@@ -28,6 +50,12 @@ class CommentForm(ModelForm):
     class Meta:
         model = Comment
         fields = ["comment"]
+        widgets = {
+            'comment': forms.TextInput(attrs={
+                'class': 'form-control mb-2', 
+                'placeholder': 'Comment'
+            })
+        }
 
 def index(request):
     return render(request, "auctions/index.html", {

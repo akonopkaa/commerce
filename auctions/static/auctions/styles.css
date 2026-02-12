@@ -2,7 +2,7 @@ body {
     padding: 10px;
 }
 
-.card-product .img-wrap {
+.img-wrap {
     border-radius: 3px 3px 0 0;
     overflow: hidden;
     position: relative;
@@ -10,7 +10,7 @@ body {
     text-align: center;
 }
 
-.card-product .img-wrap img {
+img {
     max-height: 100%;
     max-width: 100%;
     object-fit: cover;

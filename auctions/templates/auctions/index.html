@@ -1,18 +1,18 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-<h2>
+<h2 class="text-center">
     {{ title }}
 </h2>
 <div class="row">
     {% for listing in listings %}
-    <div class="col-md-4">
+    <div class="col-md-4 mb-3">
         <div class="card card-product">
             <div class="img-wrap">
                 {% if listing.image %}
-                <img src="{{ listing.image.url }}">
+                <img src="{{ listing.image.url }}" width="300" height="300">
                 {% else %}
-                <img src="/media/uploads/no_image_available.jpg">
+                <img src="/media/uploads/no_image_available.jpg" width="300" height="300">
                 {% endif %}
             </div>
             <div class="info-wrap">
@@ -39,7 +39,7 @@
         </div>
     </div>
     {% empty %}
-    <div class="col-md-4">
+    <div class="col-12 text-center">
         No listings available
     </div>
     {% endfor %}

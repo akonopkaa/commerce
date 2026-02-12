@@ -1,20 +1,18 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-<h2>
+<h2 class="text-center">
     Categories
 </h2>
-{% for category in categories %}
-<div>
-    <div>
-        <a href="{% url 'view_category' category.id %}">
-            {{ category.category }}
-        </a>
+<div class="list-group w-50 mx-auto text-center">
+    {% for category in categories %}
+    <a class="list-group-item list-group-item-action" href="{% url 'view_category' category.id %}">
+        {{ category.category }}
+    </a>
+    {% empty %}
+    <div class="list-group-item list-group-item-action">
+        No categories available
     </div>
+    {% endfor %}
 </div>
-{% empty %}
-<div>
-    No categories available
-</div>
-{% endfor %}
 {% endblock %}
